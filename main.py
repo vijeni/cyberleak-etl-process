@@ -1,8 +1,14 @@
 import os
 from urllib.parse import urlparse
 
-def extract_credentials(folder_path, output_file):
-    credentials = []
+def extract_credentials(folder_path, user_output_file, password_output_file):
+    """
+    Função para extrair domínio, nome de usuário e senha de arquivos .txt em uma pasta e
+    salvá-los em dois arquivos CSV separados: um para usuário e outro para senha.
+    """
+    user_credentials = []
+    password_credentials = []
+
     # Percorre todos os arquivos na pasta
     for file_name in os.listdir(folder_path):
         if file_name.endswith(".txt"):  # Considera apenas arquivos com extensão .txt
@@ -15,9 +21,8 @@ def extract_credentials(folder_path, output_file):
                     for line in file:
                         line = line.strip()  # Remove espaços e quebras de linha
 
-                        # Extrai o domínio da URL, e as credenciais com "|" ou ":"
+                        # Extrai o domínio da URL e as credenciais
                         if "|" in line:
-                            # Divide em URL e partes de credenciais com "|"
                             parts = line.split("|", 2)
                             if len(parts) == 3:
                                 url = parts[0]
@@ -25,7 +30,6 @@ def extract_credentials(folder_path, output_file):
                                 password = parts[2]
 
                         elif ":" in line:
-                            # Divide em URL e partes de credenciais com ":"
                             parts = line.split(":", 2)
                             if len(parts) == 3:
                                 url = parts[0]
@@ -35,29 +39,39 @@ def extract_credentials(folder_path, output_file):
                         # Extraindo domínio da URL
                         domain = urlparse(url).netloc  # Extrai o domínio
 
-                        # Adiciona as informações ao CSV
-                        credentials.append(f"{domain},{username},{password}")
+                        # Adiciona as informações aos CSVs separados
+                        user_credentials.append(f"{domain},{username}")
+                        password_credentials.append(f"{domain},{password}")
 
             except Exception as e:
                 print(f"Erro ao ler o arquivo '{file_name}': {e}")
 
-    # Escreve todas as credenciais extraídas em um único arquivo de saída
-    with open(output_file, 'w', encoding='utf-8') as output:
-        output.write("domain,username,password\n")  # Cabeçalho do CSV
-        for credential in credentials:
-            output.write(credential + "\n")
+    # Escreve as credenciais de usuário em um arquivo de saída
+    with open(user_output_file, 'w', encoding='utf-8') as user_output:
+        user_output.write("domain,username\n")  # Cabeçalho do CSV para usuários
+        for credential in user_credentials:
+            user_output.write(credential + "\n")
 
-    print(f"Credenciais extraídas e salvas em '{output_file}'.")
+    print(f"Credenciais de usuário extraídas e salvas em '{user_output_file}'.")
+
+    # Escreve as credenciais de senha em um arquivo de saída
+    with open(password_output_file, 'w', encoding='utf-8') as password_output:
+        password_output.write("domain,password\n")  # Cabeçalho do CSV para senhas
+        for credential in password_credentials:
+            password_output.write(credential + "\n")
+
+    print(f"Credenciais de senha extraídas e salvas em '{password_output_file}'.")
 
 def main():
     # Diretório onde os arquivos estão localizados
     folder_path = "input"  # Substitua pelo caminho da pasta onde estão os arquivos
 
-    # Caminho do arquivo consolidado
-    output_file = "credenciais_consolidadas.csv"
+    # Caminhos dos arquivos de saída
+    user_output_file = "usuarios.csv"
+    password_output_file = "senhas.csv"
 
-    # Extrair credenciais e consolidá-las
-    extract_credentials(folder_path, output_file)
+    # Extrair credenciais e salvá-las em arquivos separados
+    extract_credentials(folder_path, user_output_file, password_output_file)
 
 if __name__ == "__main__":
     main()
