@@ -1,3 +1,5 @@
+colorama==0.4.6
 psycopg2-binary==2.9.10
 python-dotenv==1.0.1
+tqdm==4.66.6
 zxcvbn==4.4.28
