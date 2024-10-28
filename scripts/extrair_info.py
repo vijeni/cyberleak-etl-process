@@ -108,8 +108,8 @@ def processar_arquivo(db, caminho_arquivo, separador):
             if not senha:
                 logger.warning(f"Usuário ou senha vazios: {linha}")
                 continue
-            if len(senha) > 40:
-                logger.warning(f"Senha possui mais de 40 caracteres: {senha} - {len(senha)}")
+            if len(senha) > 40 or len(senha) < 4:
+                logger.warning(f"Senha não possui entre 4 e 40 caracteres: {senha} - {len(senha)}")
                 continue
 
             id_dominio = inserir_dim_dominio(db, extrair_dominio(url))
