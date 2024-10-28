@@ -32,7 +32,7 @@ def extrair_dominio(url):
         return dominio
     except Exception as e:
         logger.error(f"Erro ao extrair domínio da URL: {url}. Erro: {e}")
-        return None
+        return parsed_url
 
 def email_valido(email):
     pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
