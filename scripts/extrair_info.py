@@ -1,6 +1,8 @@
 import os
 import re
-from urllib.parse import urlparse 
+import logging
+from datetime import datetime
+from urllib.parse import urlparse
 from db.database import connect_db
 from db.operacoes import (
     inserir_dim_tempo,
@@ -12,6 +14,15 @@ from db.operacoes import (
     inserir_fato_vazamentos_senha
 )
 
+def configure_logging(plataforma_origem):
+    log_filename = f'{plataforma_origem}_{datetime.now().strftime("%Y%m%d_%H%M%S")}.log'
+    logging.basicConfig(
+        filename="./log/"+log_filename,
+        level=logging.INFO,
+        format='%(asctime)s - %(levelname)s - %(message)s'
+    )
+    return logging.getLogger(__name__)
+
 def extrair_dominio(url):
     try:
         parsed_url = urlparse(url)
@@ -20,9 +31,8 @@ def extrair_dominio(url):
             dominio = dominio[4:]        
         return dominio
     except Exception as e:
-        print(f"Erro ao extrair domínio da URL: {url}. Erro: {e}")
+        logger.error(f"Erro ao extrair domínio da URL: {url}. Erro: {e}")
         return None
-
 
 def email_valido(email):
     pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
@@ -36,13 +46,17 @@ def extrair_dados_arquivo(nome_arquivo):
         plataforma_origem = match.group(2)
         return data, plataforma_origem
     else:
-        print("O nome do arquivo não segue o padrão esperado.")
+        temp_logger = logging.getLogger("temp_logger")
+        temp_logger.warning("O nome do arquivo não segue o padrão esperado.")
         return None, None
 
 def processar_arquivo(db, caminho_arquivo, separador):
     data, plataforma_origem = extrair_dados_arquivo(os.path.basename(caminho_arquivo))
     if not data or not plataforma_origem:
         return
+
+    global logger
+    logger = configure_logging(plataforma_origem)
     
     id_tempo = inserir_dim_tempo(db, data)
     
@@ -50,43 +64,53 @@ def processar_arquivo(db, caminho_arquivo, separador):
     
     with open(caminho_arquivo, 'r', encoding='utf-8') as arquivo:
         if caminho_arquivo.lower().endswith('.csv'):
-          next(arquivo) 
+            next(arquivo)
+        
         for linha in arquivo:
-            linha = linha.strip()  
+            linha = linha.replace('\x00', '').strip()
             
             if not linha:
-                continue  
+                continue
 
             if separador == ':':
-                partes = linha.rsplit(':', 2)
+                if "|" in linha:
+                    partes = linha.split("|")
                 
-                if len(partes) == 3:
-                    url, usuario, senha = partes
-                    
-                    # Regex para capturar URLs (http, https, android) e lidar com portas
-                    match = re.match(r'^(https?|android):\/\/[^:]+(?::\d+)?@?[^:]*', url)
-                    if match:
-                        url = match.group(0) 
-                    else:
-                        print(f"Formato inválido (URL): {linha}")
+                    if len(partes) != 3:
+                        logger.warning(f"Erro ao processar linha (formato inesperado): {linha}")
                         continue
+                    url, usuario, senha = partes
                 else:
-                    print(f"Formato inválido (componentes insuficientes): {linha}")
-                    continue
-
+                    partes = linha.rsplit(separador, 2)
+                    
+                    if len(partes) == 3:
+                        url, usuario, senha = partes
+                        
+                        # Regex para capturar URLs (http, https, android) e lidar com portas
+                        match = re.match(r'^(https?|android):\/\/[^:]+(?::\d+)?@?[^:]*', url)
+                        if match:
+                            url = match.group(0)
+                        else:
+                            logger.warning(f"Formato inválido (URL): {linha}")
+                            continue
+                    else:
+                        logger.warning(f"Formato inválido (componentes insuficientes): {linha}")
+                        continue
             else:
                 partes = linha.split(separador)
                 
                 if len(partes) != 3:
-                    print(f"Erro ao processar linha (formato inesperado): {linha}")
+                    logger.warning(f"Erro ao processar linha (formato inesperado): {linha}")
                     continue
                 
                 url, usuario, senha = partes
 
             if not senha:
-                print(f"Usuário ou senha vazios: {linha}")
+                logger.warning(f"Usuário ou senha vazios: {linha}")
                 continue
-          
+            if len(senha) > 255:
+                logger.warning(f"Senha possui mais de 255 caracteres: {len(senha)}")
+                continue
 
             id_dominio = inserir_dim_dominio(db, extrair_dominio(url))
             id_senha = inserir_dim_senha(db, senha)

@@ -23,7 +23,7 @@ def main():
         db.close()
         print("Processo concluido com sucesso")
       except Exception as e:
-        print("Ocorreu um erro: " + e)
+        print("Ocorreu um erro: ", e)
 
 if __name__ == '__main__':
     main()
