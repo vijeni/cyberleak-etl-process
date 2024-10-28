@@ -80,7 +80,7 @@ Certifique-se de que o banco de dados esteja corretamente configurado antes de c
 
 Os arquivos que o projeto processa devem seguir um padrão específico no nome, com a seguinte estrutura:
 
-```md
+```txt
 YYYY-MM-DD_Plataforma-origem.txt
 YYYY-MM-DD_Plataforma-origem.csv
 ```
