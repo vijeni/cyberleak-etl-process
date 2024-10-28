@@ -116,7 +116,6 @@ O projeto também usa o pacote [zxcvbn](https://github.com/dropbox/zxcvbn) para 
 
 ### 9. Estrutura do Projeto
 
-<<<<<<< HEAD
 > Diretórios
 - `input/`: Diretório onde os arquivos de dados devem ser colocados.
 - `scripts/`: Diretório com scripts de tratamento de dados
@@ -129,10 +128,3 @@ O projeto também usa o pacote [zxcvbn](https://github.com/dropbox/zxcvbn) para 
 - `.env.example`: Arquivo de exemplo de configuração com as credenciais de acesso ao banco de dados.
 - `requirements.txt`: Lista de dependências do projeto.
 - `README.md`: Este arquivo com instruções para instalação e uso.
-=======
-- input/: Diretório onde os arquivos de dados devem ser colocados.
-- main.py: Script principal que gerencia o fluxo do programa.
-- .env: Arquivo de configuração com as credenciais de acesso ao banco de dados.
-- requirements.txt: Lista de dependências do projeto.
-- README.md: Este arquivo com instruções para instalação e uso.
->>>>>>> 227db44890933fb7fc0601c264ee1affc16b85b4
