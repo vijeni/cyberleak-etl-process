@@ -29,13 +29,13 @@ Com o ambiente virtual ativado, instale as dependências do projeto utilizando o
 pip install -r requirements.txt
 ```
 
-### 3. Criar o Diretório `input`
+### 3. Criar diretórios `input` e `log`
 
-Certifique-se de que o diretório `input` exista na raiz do projeto. Este diretório será usado para armazenar os arquivos de entrada com os dados de vazamento.
+Certifique-se de que os diretório `input` e `log` existam na raiz do projeto. Estes diretório serão usados para armazenar os arquivos de entrada com os dados de vazamento e logs dos processos, respectivamente.
 
 ```bash
 # Criar o diretório input
-mkdir input
+mkdir input log
 ```
 
 ### 4. Criar o Arquivo `.env`
@@ -106,14 +106,25 @@ python main.py
 
 Você será solicitado a selecionar um arquivo do diretório input e informar o separador utilizado no arquivo `|` `,` ou `:`
 
+#### Logging
+
+A cada operação, um arquivo será gerado no diretório `./log`
+
 ### 7. Avaliação de Senhas
 
 O projeto também usa o pacote [zxcvbn](https://github.com/dropbox/zxcvbn) para  avaliar a complexidade das senhas, fornecendo feedback sobre como melhorá-las. Para mais detalhes sobre como isso funciona, consulte o código do arquivo main.py.
 
 ### 8. Estrutura do Projeto
 
-- input/: Diretório onde os arquivos de dados devem ser colocados.
-- main.py: Script principal que gerencia o fluxo do programa.
-- .env: Arquivo de configuração com as credenciais de acesso ao banco de dados.
-- requirements.txt: Lista de dependências do projeto.
-- README.md: Este arquivo com instruções para instalação e uso.
+> Diretórios
+- `input/`: Diretório onde os arquivos de dados devem ser colocados.
+- `scripts/`: Diretório com scripts de tratamento de dados
+- `db/`: Diretório com configurações de banco de dados e arquivos '.sql'
+- `docs/`: Diretório com imagens e documentações
+- `log/`: Diretório de output dos logs
+
+> Arquivos
+- `main.py`: Script principal que gerencia o fluxo do programa.
+- `.env.example`: Arquivo de exemplo de configuração com as credenciais de acesso ao banco de dados.
+- `requirements.txt`: Lista de dependências do projeto.
+- `README.md`: Este arquivo com instruções para instalação e uso.
