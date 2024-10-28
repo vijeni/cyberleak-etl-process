@@ -1,7 +1,8 @@
 import os
 import re
-from db.db_connection import connect_db
-from db.db_operations import (
+from urllib.parse import urlparse 
+from db.database import connect_db
+from db.operacoes import (
     inserir_dim_tempo,
     inserir_dim_dominio,
     inserir_dim_email,
@@ -10,6 +11,17 @@ from db.db_operations import (
     inserir_fato_vazamentos_email,
     inserir_fato_vazamentos_senha
 )
+
+def extrair_dominio(url):
+    try:
+        parsed_url = urlparse(url)
+        dominio = parsed_url.netloc 
+        if dominio.startswith("www."):
+            dominio = dominio[4:]        
+        return dominio
+    except Exception as e:
+        print(f"Erro ao extrair domínio da URL: {url}. Erro: {e}")
+        return None
 
 
 def email_valido(email):
@@ -21,20 +33,20 @@ def extrair_dados_arquivo(nome_arquivo):
     match = re.match(pattern, nome_arquivo)
     if match:
         data = match.group(1)
-        plataforma_origem = match.group(2) + '-' + match.group(3)
+        plataforma_origem = match.group(2)
         return data, plataforma_origem
     else:
         print("O nome do arquivo não segue o padrão esperado.")
         return None, None
 
-def processar_arquivo(conn, caminho_arquivo, separador):
+def processar_arquivo(db, caminho_arquivo, separador):
     data, plataforma_origem = extrair_dados_arquivo(os.path.basename(caminho_arquivo))
     if not data or not plataforma_origem:
         return
     
-    id_tempo = inserir_dim_tempo(conn, data)
+    id_tempo = inserir_dim_tempo(db, data)
     
-    id_fonte_vazamento = inserir_dim_fonte_vazamento(conn, plataforma_origem)
+    id_fonte_vazamento = inserir_dim_fonte_vazamento(db, plataforma_origem)
     
     with open(caminho_arquivo, 'r', encoding='utf-8') as arquivo:
         if caminho_arquivo.lower().endswith('.csv'):
@@ -76,11 +88,11 @@ def processar_arquivo(conn, caminho_arquivo, separador):
                 continue
           
 
-            id_dominio = inserir_dim_dominio(conn, url)
-            id_senha = inserir_dim_senha(conn, senha)
-            inserir_fato_vazamentos_senha(conn, id_dominio, id_senha, id_fonte_vazamento)
+            id_dominio = inserir_dim_dominio(db, extrair_dominio(url))
+            id_senha = inserir_dim_senha(db, senha)
+            inserir_fato_vazamentos_senha(db, id_dominio, id_senha, id_fonte_vazamento)
 
             if email_valido(usuario):
-              id_email = inserir_dim_email(conn, usuario)
-              inserir_fato_vazamentos_email(conn, id_tempo, id_dominio, id_email, id_fonte_vazamento)
+              id_email = inserir_dim_email(db, usuario)
+              inserir_fato_vazamentos_email(db, id_tempo, id_dominio, id_email, id_fonte_vazamento)
             

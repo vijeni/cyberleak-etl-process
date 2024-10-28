@@ -1,6 +1,6 @@
 import os
-from db.db_connection import connect_db
-from scripts.extract_info import processar_arquivo
+from db.database import connect_db
+from scripts.extrair_info import processar_arquivo
 
 
 def main():
@@ -18,8 +18,12 @@ def main():
 
     db = connect_db()
     if db:
+      try:
         processar_arquivo(db, caminho_arquivo, separador)
         db.close()
+        print("Processo concluido com sucesso")
+      except Exception as e:
+        print("Ocorreu um erro: " + e)
 
 if __name__ == '__main__':
     main()
