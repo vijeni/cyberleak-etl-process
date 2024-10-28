@@ -87,13 +87,13 @@ YYYY-MM-DD_Plataforma-origem.csv
 
 - YYYY-MM-DD: Data em que o arquivo foi gerado.
 - Plataforma-origem: O nome da plataforma de onde os dados foram vazados (por exemplo, "Facebook", "LinkedIn").
-- Extensões aceitas: .txt ou .csv.
-- 
+- **Extensões aceitas: .txt ou .csv.**
+
 Exemplo de nomes válidos:
 
 - 2024-01-15_Facebook.txt
 - 2023-12-22_LinkedIn.csv
-- 
+
 ### 6. Executando o Projeto
 
 Para executar o projeto e processar os arquivos, certifique-se de que seu ambiente está configurado corretamente (ambiente virtual ativo, dependências instaladas e arquivo .env configurado). Depois, execute o script principal:
