@@ -32,7 +32,7 @@ def extrair_dominio(url):
         return dominio
     except Exception as e:
         logger.error(f"Erro ao extrair domínio da URL: {url}. Erro: {e}")
-        return parsed_url
+        return url
 
 def email_valido(email):
     pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
@@ -87,7 +87,7 @@ def processar_arquivo(db, caminho_arquivo, separador):
                         url, usuario, senha = partes
                         
                         # Regex para capturar URLs (http, https, android) e lidar com portas
-                        match = re.match(r'^(https?|android):\/\/[^:]+(?::\d+)?@?[^:]*', url)
+                        match = re.match(r'^(https?):\/\/[^:]+(?::\d+)?@?[^:]*', url)
                         if match:
                             url = match.group(0)
                         else:
@@ -108,8 +108,8 @@ def processar_arquivo(db, caminho_arquivo, separador):
             if not senha:
                 logger.warning(f"Usuário ou senha vazios: {linha}")
                 continue
-            if len(senha) > 255:
-                logger.warning(f"Senha possui mais de 255 caracteres: {len(senha)}")
+            if len(senha) > 40:
+                logger.warning(f"Senha possui mais de 40 caracteres: {senha} - {len(senha)}")
                 continue
 
             id_dominio = inserir_dim_dominio(db, extrair_dominio(url))
