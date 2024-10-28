@@ -1,4 +1,5 @@
 import os
+import re
 from tqdm import tqdm
 from db.operacoes import (
     inserir_dim_tempo,
