@@ -78,7 +78,7 @@ Esse arquivo vai criar as seguintes tabelas no banco de dados:
 
 Certifique-se de que o banco de dados esteja corretamente configurado antes de continuar.
 
-### 5. Padrão dos Arquivos no Diretório `input`
+### 6. Padrão dos Arquivos no Diretório `input`
 
 Os arquivos que o projeto processa devem seguir um padrão específico no nome, com a seguinte estrutura:
 
@@ -96,7 +96,7 @@ Exemplo de nomes válidos:
 - 2024-01-15_Facebook.txt
 - 2023-12-22_LinkedIn.csv
 
-### 6. Executando o Projeto
+### 7. Executando o Projeto
 
 Para executar o projeto e processar os arquivos, certifique-se de que seu ambiente está configurado corretamente (ambiente virtual ativo, dependências instaladas e arquivo .env configurado). Depois, execute o script principal:
 
@@ -106,11 +106,11 @@ python main.py
 
 Você será solicitado a selecionar um arquivo do diretório input e informar o separador utilizado no arquivo `|` `,` ou `:`
 
-### 7. Avaliação de Senhas
+### 8. Avaliação de Senhas
 
 O projeto também usa o pacote [zxcvbn](https://github.com/dropbox/zxcvbn) para  avaliar a complexidade das senhas, fornecendo feedback sobre como melhorá-las. Para mais detalhes sobre como isso funciona, consulte o código do arquivo main.py.
 
-### 8. Estrutura do Projeto
+### 9. Estrutura do Projeto
 
 - input/: Diretório onde os arquivos de dados devem ser colocados.
 - main.py: Script principal que gerencia o fluxo do programa.
