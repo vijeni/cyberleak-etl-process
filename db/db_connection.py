@@ -12,7 +12,6 @@ def connect_db():
             host=os.getenv("DB_HOST"),
             port=os.getenv("DB_PORT")
         )
-        cursor = connection.cursor()
         return connection
     except Exception as e:
         print(f"Erro ao conectar ao banco de dados: {e}")
