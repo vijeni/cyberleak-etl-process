@@ -104,7 +104,7 @@ Para executar o projeto e processar os arquivos, certifique-se de que seu ambien
 python main.py
 ```
 
-Você será solicitado a selecionar um arquivo do diretório input e informar o separador utilizado no arquivo (por exemplo, |, ,, :).
+Você será solicitado a selecionar um arquivo do diretório input e informar o separador utilizado no arquivo `|` `,` ou `:`
 
 ### 7. Avaliação de Senhas
 
