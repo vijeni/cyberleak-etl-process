@@ -2,6 +2,8 @@
 
 Este projeto tem como objetivo processar arquivos contendo informações de URLs, e-mails e senhas vazadas, avaliando a complexidade das senhas e inserindo as informações em um banco de dados PostgreSQL.
 
+![prompt](./docs/prompt.png)
+
 ## Instruções para Execução
 
 ### 1. Criar um Ambiente Virtual (venv)
@@ -71,7 +73,7 @@ Esse arquivo vai criar as seguintes tabelas no banco de dados:
 
 > Modelo de DataWarehouse
 
-![Modelo DataWarehouse ](./db/utils/datawarehouse.png)
+![Modelo DataWarehouse ](./docs/datawarehouse.png)
 
 
 Certifique-se de que o banco de dados esteja corretamente configurado antes de continuar.
