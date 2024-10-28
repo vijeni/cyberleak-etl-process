@@ -1,1 +1,8 @@
 input/
+output/
+log/
+dataleak.pi/
+.idea
+.env
+.venv
+*__pycache__
