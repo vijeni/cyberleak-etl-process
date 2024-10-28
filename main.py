@@ -1,77 +1,127 @@
+# main.py
 import os
-from urllib.parse import urlparse
+import re
+from db.db_connection import connect_db
+from db.db_operations import (
+    inserir_dim_tempo,
+    inserir_dim_dominio,
+    inserir_dim_email,
+    inserir_dim_senha,
+    inserir_dim_fonte_vazamento,
+    inserir_fato_vazamentos_email,
+    inserir_fato_vazamentos_senha
+)
 
-def extract_credentials(folder_path, user_output_file, password_output_file):
-    """
-    Função para extrair domínio, nome de usuário e senha de arquivos .txt em uma pasta e
-    salvá-los em dois arquivos CSV separados: um para usuário e outro para senha.
-    """
-    user_credentials = []
-    password_credentials = []
+def email_valido(email):
+    # Expressão regular para validar um e-mail simples
+    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    return re.match(pattern, email) is not None
 
-    # Percorre todos os arquivos na pasta
-    for file_name in os.listdir(folder_path):
-        if file_name.endswith(".txt"):  # Considera apenas arquivos com extensão .txt
-            file_path = os.path.join(folder_path, file_name)
-            print(f"Lendo o arquivo: {file_name}")
+# Extrai a data e a plataforma do nome do arquivo
+def extrair_dados_arquivo(nome_arquivo):
+    pattern = r'(\d{4}-\d{2}-\d{2})_(.+)\.(txt|csv)'
+    match = re.match(pattern, nome_arquivo)
+    if match:
+        data = match.group(1)
+        plataforma_origem = match.group(2) + '-' + match.group(3)
+        return data, plataforma_origem
+    else:
+        print("O nome do arquivo não segue o padrão esperado.")
+        return None, None
 
-            # Abre o arquivo e lê as linhas
-            try:
-                with open(file_path, 'r', encoding='utf-8') as file:
-                    for line in file:
-                        line = line.strip()  # Remove espaços e quebras de linha
+# Processa o arquivo e faz os inserts necessários
+def processar_arquivo(conn, caminho_arquivo, separador):
+    data, plataforma_origem = extrair_dados_arquivo(os.path.basename(caminho_arquivo))
+    if not data or not plataforma_origem:
+        return
+    
+    # Inserir a data na tabela dim_tempo
+    id_tempo = inserir_dim_tempo(conn, data)
+    
+    # Inserir a plataforma na tabela dim_fonte_vazamento
+    id_fonte_vazamento = inserir_dim_fonte_vazamento(conn, plataforma_origem)
+    
+    with open(caminho_arquivo, 'r', encoding='utf-8') as arquivo:
+        if caminho_arquivo.lower().endswith('.csv'):
+          next(arquivo)  # Skip the header line
+        for linha in arquivo:
+            linha = linha.strip()  # Remove espaços e quebras de linha ao redor
+            
+            if not linha:
+                continue  # Ignora linhas vazias
 
-                        # Extrai o domínio da URL e as credenciais
-                        if "|" in line:
-                            parts = line.split("|", 2)
-                            if len(parts) == 3:
-                                url = parts[0]
-                                username = parts[1]
-                                password = parts[2]
+            # Verifica o tipo de separador e realiza o tratamento adequado
+            if separador == ':':
+                # Separar a linha em no máximo 3 partes da direita para a esquerda
+                partes = linha.rsplit(':', 2)
+                
+                # Verifica se conseguimos dividir em exatamente 3 partes (URL, usuário e senha)
+                if len(partes) == 3:
+                    url_usuario, usuario, senha = partes
+                    
+                    # Regex para capturar URLs (http, https, android) e lidar com portas
+                    match = re.match(r'^(https?|android):\/\/[^:]+(?::\d+)?@?[^:]*', url_usuario)
+                    if match:
+                        url = match.group(0)  # Captura a URL completa
+                    else:
+                        print(f"Formato inválido (URL): {linha}")
+                        continue
+                else:
+                    print(f"Formato inválido (componentes insuficientes): {linha}")
+                    continue
 
-                        elif ":" in line:
-                            parts = line.split(":", 2)
-                            if len(parts) == 3:
-                                url = parts[0]
-                                username = parts[1]
-                                password = parts[2]
+            else:
+                # Separação padrão para delimitadores como ',' ou '|'
+                partes = linha.split(separador)
+                
+                if len(partes) != 3:
+                    print(f"Erro ao processar linha (formato inesperado): {linha}")
+                    continue
+                
+                # Atribui diretamente se o split com delimitador padrão for bem-sucedido
+                url, usuario, senha = partes
 
-                        # Extraindo domínio da URL
-                        domain = urlparse(url).netloc  # Extrai o domínio
+            # Verificação de campos vazios e tamanho do usuário
+            if not senha:
+                print(f"Usuário ou senha vazios: {linha}")
+                continue
+          
 
-                        # Adiciona as informações aos CSVs separados
-                        user_credentials.append(f"{domain},{username}")
-                        password_credentials.append(f"{domain},{password}")
+            # Inserir a URL (domínio)
+            id_dominio = inserir_dim_dominio(conn, url)
+            
+            # Inserir a senha
+            id_senha = inserir_dim_senha(conn, senha)
 
-            except Exception as e:
-                print(f"Erro ao ler o arquivo '{file_name}': {e}")
+            # Inserir na tabela de fatos (vazamento senha)
+            inserir_fato_vazamentos_senha(conn, id_dominio, id_senha, id_fonte_vazamento)
 
-    # Escreve as credenciais de usuário em um arquivo de saída
-    with open(user_output_file, 'w', encoding='utf-8') as user_output:
-        user_output.write("domain,username\n")  # Cabeçalho do CSV para usuários
-        for credential in user_credentials:
-            user_output.write(credential + "\n")
+            if email_valido(usuario):
+              # Inserir o email
+              id_email = inserir_dim_email(conn, usuario)
+              # Inserir na tabela de fatos (vazamento email)
+              inserir_fato_vazamentos_email(conn, id_tempo, id_dominio, id_email, id_fonte_vazamento)
+            
 
-    print(f"Credenciais de usuário extraídas e salvas em '{user_output_file}'.")
-
-    # Escreve as credenciais de senha em um arquivo de saída
-    with open(password_output_file, 'w', encoding='utf-8') as password_output:
-        password_output.write("domain,password\n")  # Cabeçalho do CSV para senhas
-        for credential in password_credentials:
-            password_output.write(credential + "\n")
-
-    print(f"Credenciais de senha extraídas e salvas em '{password_output_file}'.")
-
+# Função principal
 def main():
-    # Diretório onde os arquivos estão localizados
-    folder_path = "input"  # Substitua pelo caminho da pasta onde estão os arquivos
+    diretorio = './input'
+    arquivos = [f for f in os.listdir(diretorio) if os.path.isfile(os.path.join(diretorio, f))]
 
-    # Caminhos dos arquivos de saída
-    user_output_file = "usuarios.csv"
-    password_output_file = "senhas.csv"
+    print("Arquivos disponíveis:")
+    for i, arquivo in enumerate(arquivos):
+        print(f"{i + 1}. {arquivo}")
 
-    # Extrair credenciais e salvá-las em arquivos separados
-    extract_credentials(folder_path, user_output_file, password_output_file)
+    escolha = int(input("Escolha um arquivo para processar: ")) - 1
+    separador = input("Escolha o separador do arquivo (| , :): ")
 
-if __name__ == "__main__":
+    caminho_arquivo = os.path.join(diretorio, arquivos[escolha])
+
+    # Conectar ao banco e processar o arquivo
+    conn = connect_db()
+    if conn:
+        processar_arquivo(conn, caminho_arquivo, separador)
+        conn.close()
+
+if __name__ == '__main__':
     main()
