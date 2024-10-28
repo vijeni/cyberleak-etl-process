@@ -19,9 +19,9 @@ def main():
     db = connect_db()
     if db:
       try:
-        processar_arquivo(db, caminho_arquivo, separador)
+        linhas_processadas = processar_arquivo(db, caminho_arquivo, separador)
         db.close()
-        print("Processo concluido com sucesso")
+        print(f"Processo concluido com sucesso, linhas processadas: {linhas_processadas}")
       except Exception as e:
         print("Ocorreu um erro: ", e)
 
