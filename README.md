@@ -87,7 +87,7 @@ YYYY-MM-DD_Plataforma-origem.txt
 YYYY-MM-DD_Plataforma-origem.csv
 ```
 
-- YYYY-MM-DD: Data em que o arquivo foi gerado.
+- YYYY-MM-DD: Data do vazamento;
 - Plataforma-origem: O nome da plataforma de onde os dados foram vazados (por exemplo, "Facebook", "LinkedIn").
 - **Extensões aceitas: .txt ou .csv.**
 
@@ -108,7 +108,7 @@ Você será solicitado a selecionar um arquivo do diretório input e informar o 
 
 ### 7. Avaliação de Senhas
 
-O projeto também usa o pacote [zxcvbn](https://github.com/dropbox/zxcvbn) para avaliar a complexidade das senhas, fornecendo feedback sobre como melhorá-las. Para mais detalhes sobre como isso funciona, consulte o código do arquivo main.py.
+O projeto também usa o pacote [zxcvbn](https://github.com/dropbox/zxcvbn) para  avaliar a complexidade das senhas, fornecendo feedback sobre como melhorá-las. Para mais detalhes sobre como isso funciona, consulte o código do arquivo main.py.
 
 ### 8. Estrutura do Projeto
 
