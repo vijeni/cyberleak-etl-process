@@ -1,5 +1,11 @@
 from zxcvbn import zxcvbn
+import bcrypt
 import re
+
+def criptografar_senha(senha):
+    salt = bcrypt.gensalt()
+    senha_criptografada = bcrypt.hashpw(senha.encode('utf-8'), salt)
+    return senha_criptografada.decode('utf-8')
 
 def avaliar_senha(senha):
     complexidade = ['Muito fraca', 'Fraca', 'Média', 'Forte', 'Muito forte']

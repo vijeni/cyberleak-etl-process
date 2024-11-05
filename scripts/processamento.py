@@ -1,12 +1,12 @@
 import os
 import re
 from tqdm import tqdm
-from db.operacoes import (
+from db.db_operacoes import (
     inserir_dim_tempo,
     inserir_dim_dominio,
     inserir_dim_email,
     inserir_dim_senha,
-    inserir_dim_fonte_vazamento,
+    inserir_fato_fonte_vazamento,
     inserir_fato_vazamentos_email,
     inserir_fato_vazamentos_senha
 )
@@ -29,7 +29,7 @@ def processar_arquivo(db, caminho_arquivo, separador):
 
     logger = configure_logging(plataforma_origem)
     id_tempo = inserir_dim_tempo(db, data)
-    id_fonte_vazamento = inserir_dim_fonte_vazamento(db, plataforma_origem)
+    # id_fonte_vazamento = inserir_fato_fonte_vazamento(db, plataforma_origem)
 
     with open(caminho_arquivo, 'r', encoding='utf-8') as arquivo:
         quantidade_linhas = sum(1 for _ in arquivo)
@@ -38,7 +38,7 @@ def processar_arquivo(db, caminho_arquivo, separador):
         contador_linhas = 0
 
         with tqdm(total=quantidade_linhas, desc=Fore.BLUE + "Processando" + Style.RESET_ALL, bar_format=barra_progresso_custom,
-                ascii=False, unit=" linha") as barra:
+                  ascii=False, unit=" linha") as barra:
             if caminho_arquivo.lower().endswith('.csv'):
                 next(arquivo)
 
@@ -72,7 +72,8 @@ def processar_arquivo(db, caminho_arquivo, separador):
                             if match:
                                 url = match.group(0)
                             else:
-                                logger.warning(f"Formato inválido (URL): {linha}")
+                                logger.warning(
+                                    f"Formato inválido (URL): {linha}")
                                 continue
                         else:
                             logger.warning(
@@ -99,10 +100,10 @@ def processar_arquivo(db, caminho_arquivo, separador):
                 id_dominio = inserir_dim_dominio(db, extrair_dominio(url))
                 id_senha = inserir_dim_senha(db, senha)
                 inserir_fato_vazamentos_senha(
-                    db, id_dominio, id_senha, id_fonte_vazamento)
+                    db, id_tempo, id_dominio, id_senha)
 
                 if email_valido(usuario):
                     id_email = inserir_dim_email(db, usuario)
                     inserir_fato_vazamentos_email(
-                        db, id_tempo, id_dominio, id_email, id_fonte_vazamento)
+                        db, id_tempo, id_dominio, id_email)
     return contador_linhas

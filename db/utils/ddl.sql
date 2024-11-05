@@ -1,3 +1,9 @@
+
+CREATE TABLE dim_dominio (
+    id_dominio SERIAL PRIMARY KEY,
+    dominio VARCHAR(255) UNIQUE NOT NULL
+);
+
 CREATE TABLE dim_tempo (
     id_tempo SERIAL PRIMARY KEY,
     data DATE NOT NULL,
@@ -5,11 +11,6 @@ CREATE TABLE dim_tempo (
     mes INT NOT NULL,
     dia INT NOT NULL,
     CONSTRAINT unique_tempo UNIQUE (data, ano, mes, dia)
-);
-
-CREATE TABLE dim_dominio (
-    id_dominio SERIAL PRIMARY KEY,
-    dominio VARCHAR(255) UNIQUE NOT NULL
 );
 
 CREATE TABLE dim_email (
@@ -32,17 +33,6 @@ CREATE TABLE dim_senha (
   tempo_adivinhacao VARCHAR(100)
 );
 
-CREATE TABLE fato_fonte_vazamento (
-    id_fonte_vazamento SERIAL PRIMARY KEY,
-    nome_fonte VARCHAR(255) NOT NULL,
-    descricao TEXT,
-    data_vazamento DATE NOT NULL,
-    data_adicionado TIMESTAMP NOT NULL,
-    data_modificada TIMESTAMP NOT NULL,
-    id_dominio INT REFERENCES dim_dominio(id_dominio),
-    numero_vazamentos BIGINT NOT NULL,
-    classe_vazamento TEXT[] NOT NULL
-);
 
 CREATE TABLE fato_vazamentos_email (
     id_vazamento_email SERIAL PRIMARY KEY,
@@ -56,4 +46,16 @@ CREATE TABLE fato_vazamentos_senha (
     id_tempo INT REFERENCES dim_tempo(id_tempo),
     id_dominio INT REFERENCES dim_dominio(id_dominio),
     id_senha INT REFERENCES dim_senha(id_senha)
+);
+
+CREATE TABLE fato_fonte_vazamento (
+    id_fonte_vazamento SERIAL PRIMARY KEY,
+    nome_fonte VARCHAR(255) NOT NULL,
+    descricao TEXT,
+    data_vazamento DATE NOT NULL,
+    data_adicionado TIMESTAMP NOT NULL,
+    data_modificada TIMESTAMP NOT NULL,
+    id_dominio INT REFERENCES dim_dominio(id_dominio),
+    numero_vazamentos BIGINT NOT null,
+    classe_vazamento TEXT[] NOT NULL
 );

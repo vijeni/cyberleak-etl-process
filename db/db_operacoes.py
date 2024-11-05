@@ -1,5 +1,6 @@
 from datetime import datetime
-from scripts.analise_senhas import contabilizar_caracteres, avaliar_senha
+from scripts.tratamento_senhas import contabilizar_caracteres, avaliar_senha, criptografar_senha
+
 
 def inserir_dim_tempo(db, data):
     cursor = db.cursor()
@@ -23,9 +24,10 @@ def inserir_dim_tempo(db, data):
         """, (data_formatada, ano, mes, dia,))
         result = cursor.fetchone()
 
-    id_tempo = result[0]    
+    id_tempo = result[0]
     db.commit()
     return id_tempo
+
 
 def inserir_dim_dominio(db, dominio):
     cursor = db.cursor()
@@ -43,9 +45,10 @@ def inserir_dim_dominio(db, dominio):
         """, (dominio,))
         result = cursor.fetchone()
 
-    id_dominio = result[0]    
+    id_dominio = result[0]
     db.commit()
     return id_dominio
+
 
 def inserir_dim_email(db, email):
     cursor = db.cursor()
@@ -68,24 +71,27 @@ def inserir_dim_email(db, email):
     db.commit()
     return id_email
 
+
 def inserir_dim_senha(db, senha):
-    qntd_caract, qntd_caract_text, qntd_caract_especiais, qntd_numeros, qntd_caract_text_upper, qntd_caract_text_lower = contabilizar_caracteres(senha)
+    qntd_caract, qntd_caract_text, qntd_caract_especiais, qntd_numeros, qntd_caract_text_upper, qntd_caract_text_lower = contabilizar_caracteres(
+        senha)
     complexidade, avisos, tempo_adivinhacao = avaliar_senha(senha)
-    cursor = db.cursor() 
+    cursor = db.cursor()
     cursor.execute("""
         INSERT INTO dim_senha (senha, qntd_caract, qntd_caract_text, qntd_caract_especiais, qntd_numeros, qntd_caract_text_upper, qntd_caract_text_lower, complexidade, avisos, tempo_adivinhacao)
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         RETURNING id_senha;
-    """, (senha, qntd_caract, qntd_caract_text, qntd_caract_especiais, qntd_numeros, qntd_caract_text_upper, qntd_caract_text_lower, complexidade, avisos, tempo_adivinhacao,))
+    """, (criptografar_senha(senha), qntd_caract, qntd_caract_text, qntd_caract_especiais, qntd_numeros, qntd_caract_text_upper, qntd_caract_text_lower, complexidade, avisos, tempo_adivinhacao,))
 
     id_senha = cursor.fetchone()[0]
     db.commit()
     return id_senha
 
-def inserir_dim_fonte_vazamento(db, plataforma_origem):
+
+def inserir_fato_fonte_vazamento(db, plataforma_origem):
     cursor = db.cursor()
     cursor.execute("""
-        INSERT INTO dim_fonte_vazamento (nome_fonte)
+        INSERT INTO fato_fonte_vazamento (nome_fonte)
         VALUES (%s)
         ON CONFLICT (nome_fonte) DO NOTHING
         RETURNING id_fonte_vazamento;
@@ -95,36 +101,38 @@ def inserir_dim_fonte_vazamento(db, plataforma_origem):
 
     if result is None:
         cursor.execute("""
-            SELECT id_fonte_vazamento FROM dim_fonte_vazamento WHERE nome_fonte = %s;
+            SELECT id_fonte_vazamento FROM fato_fonte_vazamento WHERE nome_fonte = %s;
         """, (plataforma_origem,))
         result = cursor.fetchone()
 
     id_fonte_vazamento = result[0]
-    
+
     db.commit()
     return id_fonte_vazamento
-  
-def inserir_fato_vazamentos_email(db, id_tempo, id_dominio, id_email, id_fonte_vazamento):
+
+
+def inserir_fato_vazamentos_email(db, id_tempo, id_dominio, id_email):
     cursor = db.cursor()
     cursor.execute("""
-        INSERT INTO fato_vazamentos_email (id_tempo, id_dominio, id_email, id_fonte_vazamento)
+        INSERT INTO fato_vazamentos_email (id_tempo, id_dominio, id_email)
         VALUES (%s, %s, %s, %s)
         RETURNING id_vazamento_email;
-    """, (id_tempo, id_dominio, id_email, id_fonte_vazamento,))
-    
+    """, (id_tempo, id_dominio, id_email,))
+
     id_vazamento_email = cursor.fetchone()[0]
-   
+
     db.commit()
     return id_vazamento_email
 
-def inserir_fato_vazamentos_senha(db, id_dominio, id_senha, id_fonte_vazamento):
+
+def inserir_fato_vazamentos_senha(db, id_tempo, id_dominio, id_senha):
     cursor = db.cursor()
     cursor.execute("""
-        INSERT INTO fato_vazamentos_senha (id_dominio, id_senha, id_fonte_vazamento)
+        INSERT INTO fato_vazamentos_senha (id_tempo, id_dominio, id_senha)
         VALUES (%s, %s, %s)
         RETURNING id_vazamento_senha;
-    """, (id_dominio, id_senha, id_fonte_vazamento,))
-    
+    """, (id_tempo, id_dominio, id_senha,))
+
     id_vazamento_senha = cursor.fetchone()[0]
     db.commit()
     return id_vazamento_senha
