@@ -71,6 +71,7 @@ def processar_arquivo(db, caminho_arquivo, separador):
                                 r'^(https?):\/\/[^:]+(?::\d+)?@?[^:]*', url)
                             if match:
                                 url = match.group(0)
+
                             else:
                                 logger.warning(
                                     f"Formato inválido (URL): {linha}")
@@ -106,4 +107,5 @@ def processar_arquivo(db, caminho_arquivo, separador):
                     id_email = inserir_dim_email(db, usuario)
                     inserir_fato_vazamentos_email(
                         db, id_tempo, id_dominio, id_email)
+
     return contador_linhas

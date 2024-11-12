@@ -113,12 +113,13 @@ def inserir_fato_fonte_vazamento(db, plataforma_origem):
 
 def inserir_fato_vazamentos_email(db, id_tempo, id_dominio, id_email):
     cursor = db.cursor()
-    cursor.execute("""
+    result = cursor.execute("""
         INSERT INTO fato_vazamentos_email (id_tempo, id_dominio, id_email)
-        VALUES (%s, %s, %s, %s)
+        VALUES (%s, %s, %s)
         RETURNING id_vazamento_email;
     """, (id_tempo, id_dominio, id_email,))
 
+    print(result)
     id_vazamento_email = cursor.fetchone()[0]
 
     db.commit()
