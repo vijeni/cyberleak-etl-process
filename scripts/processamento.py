@@ -54,8 +54,21 @@ def processar_arquivo(db, caminho_arquivo, separador):
                 if separador == ':':
                     if "|" in linha:
                         partes = linha.split("|")
+                        if len(partes) == 3:
 
-                        if len(partes) != 3:
+                            url, usuario, senha = partes
+
+                            # Regex para capturar URLs (http, https, android) e lidar com portas
+                            match = re.match(
+                                r'^(https?):\/\/[^:]+(?::\d+)?@?[^:]*', url)
+                            if match:
+                                url = match.group(0)
+
+                            else:
+                                logger.warning(
+                                    f"Formato inválido (URL): {linha}")
+                                continue
+                        else:
                             logger.warning(
                                 f"Erro ao processar linha (formato inesperado): {linha}")
                             continue
@@ -82,8 +95,20 @@ def processar_arquivo(db, caminho_arquivo, separador):
                             continue
                 else:
                     partes = linha.split(separador)
+                    if len(partes) == 3:
+                        url, usuario, senha = partes
 
-                    if len(partes) != 3:
+                        # Regex para capturar URLs (http, https, android) e lidar com portas
+                        match = re.match(
+                            r'^(https?):\/\/[^:]+(?::\d+)?@?[^:]*', url)
+                        if match:
+                            url = match.group(0)
+
+                        else:
+                            logger.warning(
+                                f"Formato inválido (URL): {linha}")
+                            continue
+                    else:
                         logger.warning(
                             f"Erro ao processar linha (formato inesperado): {linha}")
                         continue

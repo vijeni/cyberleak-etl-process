@@ -119,7 +119,6 @@ def inserir_fato_vazamentos_email(db, id_tempo, id_dominio, id_email):
         RETURNING id_vazamento_email;
     """, (id_tempo, id_dominio, id_email,))
 
-    print(result)
     id_vazamento_email = cursor.fetchone()[0]
 
     db.commit()
