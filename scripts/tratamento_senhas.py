@@ -5,7 +5,8 @@ import re
 def criptografar_senha(senha):
     salt = bcrypt.gensalt()
     senha_criptografada = bcrypt.hashpw(senha.encode('utf-8'), salt)
-    return senha_criptografada.decode('utf-8')
+    # return senha_criptografada.decode('utf-8')
+    return senha
 
 def avaliar_senha(senha):
     complexidade = ['Muito fraca', 'Fraca', 'Média', 'Forte', 'Muito forte']

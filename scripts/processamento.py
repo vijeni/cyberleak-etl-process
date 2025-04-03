@@ -13,7 +13,6 @@ from db.db_operacoes import (
 from scripts.utils import configure_logging, extrair_dominio, email_valido, extrair_dados_arquivo
 from colorama import Fore, Style, init
 
-# Barra de progresso
 init(autoreset=True)
 barra_progresso_custom = (
     "{l_bar}" + Fore.YELLOW + "{bar}" + Style.RESET_ALL +
@@ -52,7 +51,6 @@ def processar_chunk(chunk, db, id_tempo, separador, logger, barra):
                 continue
             url, usuario, senha = partes
 
-        # Validar URL e Senha
         match = re.match(r'^(https?):\/\/[^:]+(?::\d+)?@?[^:]*', url)
         if not match:
             logger.warning(f"Formato inválido (URL): {linha}")
@@ -63,7 +61,6 @@ def processar_chunk(chunk, db, id_tempo, separador, logger, barra):
             logger.warning(f"Senha inválida: {senha}")
             continue
 
-        # Inserção no banco de dados
         id_dominio = inserir_dim_dominio(db, extrair_dominio(url))
         id_senha = inserir_dim_senha(db, senha)
         inserir_fato_vazamentos_senha(db, id_tempo, id_dominio, id_senha)
@@ -72,13 +69,12 @@ def processar_chunk(chunk, db, id_tempo, separador, logger, barra):
             id_email = inserir_dim_email(db, usuario)
             inserir_fato_vazamentos_email(db, id_tempo, id_dominio, id_email)
 
-        # Atualiza a barra de progresso para cada linha processada
         barra.update(1)
 
     return contador_linhas
 
 
-def processar_arquivo(db, caminho_arquivo, separador, max_workers=80, chunk_size=1000):
+def processar_arquivo(db, caminho_arquivo, separador, max_workers=1):
     data, plataforma_origem = extrair_dados_arquivo(
         os.path.basename(caminho_arquivo))
     if not data or not plataforma_origem:
@@ -90,16 +86,15 @@ def processar_arquivo(db, caminho_arquivo, separador, max_workers=80, chunk_size
     with open(caminho_arquivo, 'r', encoding='utf-8') as arquivo:
         quantidade_linhas = sum(1 for _ in arquivo)
         arquivo.seek(0)
-
-        # Se o arquivo for CSV, ignorar o cabeçalho
+        print(max_workers)
+        chunk_size = int((quantidade_linhas / max_workers)+1) 
+        print(chunk_size)
         if caminho_arquivo.lower().endswith('.csv'):
             next(arquivo)
 
-        # Configura a barra de progresso
         with tqdm(total=quantidade_linhas, desc=Fore.BLUE + "Processando" + Style.RESET_ALL,
                   bar_format=barra_progresso_custom, ascii=False, unit=" linha") as barra:
 
-            # Executor para processar cada chunk em threads paralelas
             with ThreadPoolExecutor(max_workers=max_workers) as executor:
                 futures = []
                 chunk = []
@@ -107,17 +102,14 @@ def processar_arquivo(db, caminho_arquivo, separador, max_workers=80, chunk_size
                 for linha in arquivo:
                     chunk.append(linha)
                     if len(chunk) >= chunk_size:
-                        # Processa um chunk em uma thread
                         futures.append(executor.submit(
                             processar_chunk, chunk, db, id_tempo, separador, logger, barra))
                         chunk = []
 
-                # Processa o último chunk (se não estiver vazio)
                 if chunk:
                     futures.append(executor.submit(
                         processar_chunk, chunk, db, id_tempo, separador, logger, barra))
 
-                # Aguarda todas as threads completarem
                 total_linhas = sum(f.result() for f in futures)
                 print(f"Total de linhas processadas: {total_linhas}")
 
