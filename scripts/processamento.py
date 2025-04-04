@@ -74,7 +74,7 @@ def processar_chunk(chunk, db, id_tempo, separador, logger, barra):
     return contador_linhas
 
 
-def processar_arquivo(db, caminho_arquivo, separador, max_workers=1):
+def processar_arquivo(db, caminho_arquivo, separador, max_workers=4):
     data, plataforma_origem = extrair_dados_arquivo(
         os.path.basename(caminho_arquivo))
     if not data or not plataforma_origem:

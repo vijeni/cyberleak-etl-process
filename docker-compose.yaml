@@ -1,0 +1,36 @@
+services:
+  postgres:
+    container_name: postgres
+    restart: always
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: cyberleak
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+  cyberleak:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: cyberleak
+    restart: always
+    volumes:
+      - ./cyberleak/input:/app/input
+      - ./cyberleak/output:/app/output
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=user
+      - DB_PASSWORD=password
+      - DB_NAME=cyberleak
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+
+volumes:
+  postgres_data:
+    driver: local
