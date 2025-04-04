@@ -2,11 +2,12 @@
 import os
 from db.database import connect_db
 from scripts.processamento import processar_arquivo
+import shutil
 
 
 def main():
     while True:
-        diretorio = './input'
+        diretorio = './files/input'
         arquivos = [f for f in os.listdir(
             diretorio) if os.path.isfile(os.path.join(diretorio, f))]
 
@@ -27,6 +28,7 @@ def main():
                         db.close()
                         print(
                             f"\nProcesso concluído com sucesso, linhas processadas: {linhas_processadas}")
+                        shutil.move(caminho_arquivo, f'./files/processado/{arquivo}')
                     except Exception as e:
                         print("Ocorreu um erro: ", e)
 

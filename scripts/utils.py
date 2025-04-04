@@ -6,7 +6,7 @@ from datetime import datetime
 
 
 def configure_logging(plataforma_origem):
-    log_filename = f'./log/{plataforma_origem}_{datetime.now().strftime("%Y%m%d_%H%M%S")}.log'
+    log_filename = f'./files/log/{plataforma_origem}_{datetime.now().strftime("%Y%m%d_%H%M%S")}.log'
     logging.basicConfig(
         filename=log_filename,
         level=logging.INFO,

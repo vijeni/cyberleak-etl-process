@@ -18,8 +18,9 @@ services:
     container_name: cyberleak
     restart: always
     volumes:
-      - ./cyberleak/input:/app/input
-      - ./cyberleak/output:/app/output
+      - ./cyberleak/files/input:/app/files/input
+      - ./cyberleak/files/processado:/app/files/processado
+      - ./cyberleak/files/log:/app/files/log
     environment:
       - DB_HOST=postgres
       - DB_PORT=5432
